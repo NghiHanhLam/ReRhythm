@@ -1,14 +1,15 @@
-# ReRhythm 🎯
+# ReRhythm S
 > AI-powered 28-day career coaching platform that analyzes your resume and generates a personalized learning roadmap to land your target role.
 
 ![.NET](https://img.shields.io/badge/.NET-10.0-purple?logo=dotnet)
 ![AWS](https://img.shields.io/badge/AWS-Bedrock%20%7C%20Textract%20%7C%20DynamoDB-orange?logo=amazonaws)
+![Security](https://img.shields.io/badge/PII-Protected-red?logo=shield)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Status](https://img.shields.io/badge/status-Active-green)
 
 ---
 
-## 🚀 What It Does
+##  What It Does
 
 1. **Upload your resume** → AWS Textract parses and extracts your skills
 2. **Enter your target role** → Claude Sonnet 4.5 analyzes skill gaps
@@ -18,7 +19,7 @@
 
 ---
 
-## 🏗️ Architecture Diagram
+##  Architecture Diagram
 
 ![ReRhythm AWS Architecture](Assets/architecture.png)
 
