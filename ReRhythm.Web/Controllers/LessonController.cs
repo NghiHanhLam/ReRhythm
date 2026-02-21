@@ -58,7 +58,7 @@ public class LessonController : Controller
             """;
 
         var ragResponse = await _ragService.RetrieveAndGenerateAsync(
-            query, string.Empty, targetRole, ct);
+            query, string.Empty, targetRole, "IT", 0, ct);
 
         // Parse response into LessonPlan
         var lesson = new LessonPlan

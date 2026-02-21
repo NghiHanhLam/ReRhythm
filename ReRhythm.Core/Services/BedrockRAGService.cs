@@ -22,9 +22,9 @@ public class BedrockRAGService
         _logger = logger;
     }
 
-    public async Task<RAGResponse> RetrieveAndGenerateAsync(string userQuery, string resumeContext, string targetRole, CancellationToken ct = default)
+    public async Task<RAGResponse> RetrieveAndGenerateAsync(string userQuery, string resumeContext, string targetRole, string industry, int yearsOfExperience, CancellationToken ct = default)
     {
-        var prompt = BuildAugmentedQuery(userQuery, resumeContext, targetRole);
+        var prompt = BuildAugmentedQuery(userQuery, resumeContext, targetRole, industry, yearsOfExperience);
         _logger.LogInformation("Invoking Claude for role: {Role}, ModelId: {ModelId}", targetRole, ModelId);
 
         var requestBody = JsonSerializer.Serialize(new
@@ -65,12 +65,17 @@ public class BedrockRAGService
         return Task.FromResult(new List<RetrievedChunk>());
     }
 
-    private string BuildAugmentedQuery(string userQuery, string resumeContext, string targetRole)
+    private string BuildAugmentedQuery(string userQuery, string resumeContext, string targetRole, string industry, int yearsOfExperience)
     {
+        var experienceLevel = yearsOfExperience <= 2 ? "Junior" : yearsOfExperience <= 5 ? "Mid-level" : yearsOfExperience <= 10 ? "Senior" : "Leadership/Executive";
+        
         return "You are a career coaching AI. Respond with valid JSON only.\n\n" +
-               $"TARGET ROLE: {targetRole}\n\n" +
+               $"TARGET ROLE: {targetRole}\n" +
+               $"INDUSTRY: {industry}\n" +
+               $"YEARS OF EXPERIENCE: {yearsOfExperience} ({experienceLevel})\n\n" +
                $"USER RESUME:\n{resumeContext}\n\n" +
-               $"TASK:\n{userQuery}\n\n" +
+               $"TASK:\n{userQuery}\n" +
+               $"Tailor the roadmap to {experienceLevel} level with industry-specific skills for {industry}.\n\n" +
                "Respond ONLY with JSON:\n" +
                "{\n" +
                "  \"skillsIdentified\": [\"skill1\"],\n" +

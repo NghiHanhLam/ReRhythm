@@ -8,14 +8,44 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="~/css/site.css" />
   <style>
-    body { background: #0a0e1a; }
+    body { background: #0a0e1a; transition: background-color 0.3s ease; }
+    body.light-mode { background: #f8fafc; }
+    body.light-mode .text-white { color: #0f172a !important; }
+    body.light-mode h1, body.light-mode h2, body.light-mode h3, body.light-mode h4 { color: #0f172a !important; }
+    body.light-mode .text-slate-400 { color: #475569 !important; }
+    body.light-mode .text-slate-300 { color: #334155 !important; }
+    body.light-mode .text-slate-500 { color: #64748b !important; }
+    body.light-mode .text-sky-400 { color: #0284c7 !important; }
+    body.light-mode .text-emerald-400 { color: #059669 !important; }
+    body.light-mode .text-red-300 { color: #dc2626 !important; }
+    body.light-mode .bg-slate-800 { background-color: #e2e8f0 !important; }
+    body.light-mode .bg-slate-800\/60 { background-color: rgba(226, 232, 240, 0.6) !important; }
+    body.light-mode .bg-slate-800\/50 { background-color: rgba(226, 232, 240, 0.5) !important; }
+    body.light-mode .bg-slate-800\/40 { background-color: rgba(226, 232, 240, 0.4) !important; }
+    body.light-mode .bg-sky-500\/20 { background-color: rgba(14, 165, 233, 0.15) !important; }
+    body.light-mode .bg-sky-500\/10 { background-color: rgba(14, 165, 233, 0.1) !important; }
+    body.light-mode .bg-sky-500\/5 { background-color: rgba(14, 165, 233, 0.05) !important; }
+    body.light-mode .border-slate-700 { border-color: #cbd5e1 !important; }
+    body.light-mode .border-slate-600 { border-color: #cbd5e1 !important; }
+    body.light-mode .border-slate-800 { border-color: #cbd5e1 !important; }
+    body.light-mode .border-sky-500 { border-color: #0284c7 !important; }
+    body.light-mode .glass-card { background: rgba(255, 255, 255, 0.9) !important; border: 1px solid #cbd5e1 !important; }
+    body.light-mode nav { background: rgba(248, 250, 252, 0.95) !important; }
+    body.light-mode .hero-bg { background: radial-gradient(ellipse at 50% 0%, rgba(14, 165, 233, 0.08) 0%, transparent 70%); }
     .gradient-text {
       background: linear-gradient(135deg, #ffffff 0%, #38bdf8 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
+    body.light-mode .gradient-text {
+      background: linear-gradient(135deg, #0f172a 0%, #0ea5e9 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
     .beat-text { color: #38bdf8; }
+    body.light-mode .beat-text { color: #0ea5e9; }
     .glass-card {
       background: rgba(15, 23, 42, 0.85);
       backdrop-filter: blur(12px);
@@ -51,9 +81,17 @@
        style="background: rgba(10,14,26,0.95); backdrop-filter: blur(10px);">
     <a asp-controller="Resume" asp-action="Upload" class="flex items-center gap-3 hover:opacity-80 transition-opacity">
       <img src="~/rhythm_logo.png" alt="ReRhythm" class="h-20" />
-      <span class="text-xl font-bold gradient-text">ReRhythm</span>
+     <!-- Navbar   <span class="text-xl font-bold gradient-text">ReRhythm</span>-->
     </a>
     <div class="flex items-center gap-6 text-sm">
+      <button id="themeToggle" class="text-slate-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-slate-800" title="Toggle theme">
+        <svg id="darkIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+        </svg>
+        <svg id="lightIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+      </button>
       <a href="/Roadmap/FindUser" class="text-slate-400 hover:text-white transition-colors">Track Milestones</a>
       <span class="text-xs bg-slate-800 border border-slate-700 text-slate-300
                    px-3 py-1 rounded-full">
@@ -63,6 +101,26 @@
   </nav>
 
   <script>
+    // Theme toggle
+    const themeToggle = document.getElementById('themeToggle');
+    const darkIcon = document.getElementById('darkIcon');
+    const lightIcon = document.getElementById('lightIcon');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    
+    if (savedTheme === 'light') {
+      document.body.classList.add('light-mode');
+      darkIcon.classList.add('hidden');
+      lightIcon.classList.remove('hidden');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      localStorage.setItem('theme', isLight ? 'light' : 'dark');
+      darkIcon.classList.toggle('hidden');
+      lightIcon.classList.toggle('hidden');
+    });
+
     // Update Track Milestones link if userId exists
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('userId') || localStorage.getItem('reRhythmUserId') || '';

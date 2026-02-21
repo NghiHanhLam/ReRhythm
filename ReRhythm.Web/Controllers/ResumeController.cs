@@ -17,6 +17,18 @@ public class ResumeController : Controller
     [HttpGet]
     public IActionResult Upload() => View();
 
+    [HttpGet]
+    public async Task<IActionResult> CheckUserId(string userId, CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(userId))
+            return Json(new { exists = false });
+
+        var dynamoDb = HttpContext.RequestServices.GetRequiredService<DynamoDbService>();
+        var existingPlan = await dynamoDb.GetLatestRoadmapAsync(userId, ct);
+        
+        return Json(new { exists = existingPlan != null });
+    }
+
     [HttpPost]
     [RequestSizeLimit(10 * 1024 * 1024)]
     [Consumes("multipart/form-data")]
@@ -40,8 +52,8 @@ public class ResumeController : Controller
                 return Json(new { success = false, error = "Only PDF and DOCX files are allowed." });
 
             // Validate userId format
-            if (string.IsNullOrWhiteSpace(userId) || !System.Text.RegularExpressions.Regex.IsMatch(userId, @"^[a-zA-Z0-9-]+$"))
-                return Json(new { success = false, error = "User ID must contain only letters, numbers, and hyphens." });
+            if (string.IsNullOrWhiteSpace(userId) || !System.Text.RegularExpressions.Regex.IsMatch(userId, @"^[a-zA-Z0-9_-]+$"))
+                return Json(new { success = false, error = "User ID must contain only letters, numbers, hyphens, and underscores." });
 
             // Check if userId already exists
             var dynamoDb = HttpContext.RequestServices.GetRequiredService<DynamoDbService>();
@@ -60,11 +72,11 @@ public class ResumeController : Controller
             stream, resume.FileName, userId, ct);
 
             var plan = await _roadmap.GenerateRoadmapAsync(
-            userId, resumeText, targetRole, ct);
+            userId, resumeText, targetRole, industry, yearsOfExperience, ct);
 
             return Json(new { success = true, redirectUrl = Url.Action("Analysis", new { userId }) });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             return Json(new { success = false, error = "Failed to process resume. Please ensure the file is a valid PDF or DOCX document." });
         }

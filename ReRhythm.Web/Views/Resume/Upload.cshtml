@@ -81,13 +81,16 @@
               <path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
             <input type="text" name="userId" id="userId" placeholder="e.g. john-doe-123" required
-                   pattern="[a-zA-Z0-9-]+" title="Only letters, numbers, and hyphens allowed"
+                   pattern="[a-zA-Z0-9_-]+" title="Only letters, numbers, hyphens, and underscores allowed"
                    class="w-full bg-slate-800/60 border border-slate-700 rounded-xl
                           pl-10 pr-4 py-3 text-white placeholder-slate-500
                           focus:outline-none focus:border-sky-500 focus:ring-1
                           focus:ring-sky-500 transition-colors" />
           </div>
-          <p class="text-xs text-slate-500 mt-1">Letters, numbers, and hyphens only (e.g., john-doe-123)</p>
+          <p id="userIdError" class="text-xs text-red-400 mt-1 hidden">Can't use characters other than letters, numbers, hyphens (-), and underscores (_)</p>
+          <p id="userIdExists" class="text-xs text-amber-400 mt-1 hidden">This User ID already exists. <a href="#" id="goToTracker" class="underline hover:text-amber-300">Click here to track your progress</a></p>
+          <p id="userIdAvailable" class="text-xs text-emerald-400 mt-1 hidden">✓ User ID is available</p>
+          <p class="text-xs text-slate-500 mt-1">Letters, numbers, hyphens, and underscores only (e.g., john_doe-123)</p>
         </div>
 
         <!-- Years of Experience Field -->
@@ -208,6 +211,61 @@
   const dropSel    = document.getElementById('dropSelected');
   const fileName   = document.getElementById('fileName');
   const fileSize   = document.getElementById('fileSize');
+  const userIdInput = document.getElementById('userId');
+  const userIdError = document.getElementById('userIdError');
+  const userIdExists = document.getElementById('userIdExists');
+  const userIdAvailable = document.getElementById('userIdAvailable');
+  let checkTimeout;
+  let isUserIdValid = false;
+
+  // Real-time userId validation
+  userIdInput.addEventListener('input', function() {
+    const value = this.value;
+    const isValid = /^[a-zA-Z0-9_-]*$/.test(value);
+    
+    // Hide all messages first
+    userIdError.classList.add('hidden');
+    userIdExists.classList.add('hidden');
+    userIdAvailable.classList.add('hidden');
+    
+    if (!isValid && value.length > 0) {
+      userIdError.classList.remove('hidden');
+      this.classList.add('border-red-500');
+      this.classList.remove('border-slate-700');
+      isUserIdValid = false;
+    } else if (value.length >= 3) {
+      this.classList.remove('border-red-500');
+      this.classList.add('border-slate-700');
+      
+      // Debounce the uniqueness check
+      clearTimeout(checkTimeout);
+      checkTimeout = setTimeout(async () => {
+        try {
+          const response = await fetch(`/Resume/CheckUserId?userId=${encodeURIComponent(value)}`);
+          const result = await response.json();
+          
+          if (result.exists) {
+            userIdExists.classList.remove('hidden');
+            document.getElementById('goToTracker').href = `/Roadmap/Tracker?userId=${encodeURIComponent(value)}`;
+            userIdInput.classList.add('border-amber-500');
+            userIdInput.classList.remove('border-slate-700');
+            isUserIdValid = false;
+          } else {
+            userIdAvailable.classList.remove('hidden');
+            userIdInput.classList.remove('border-amber-500');
+            userIdInput.classList.add('border-slate-700');
+            isUserIdValid = true;
+          }
+        } catch (error) {
+          console.error('Error checking userId:', error);
+        }
+      }, 500);
+    } else {
+      this.classList.remove('border-red-500', 'border-amber-500');
+      this.classList.add('border-slate-700');
+      isUserIdValid = false;
+    }
+  });
 
   // Industry to roles mapping by experience level
   const rolesByIndustryAndExp = {
@@ -343,6 +401,14 @@
   // Show loading state on submit
   document.getElementById('uploadForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Check if userId is valid before submitting
+    if (!isUserIdValid) {
+      const errorMsg = document.getElementById('errorMsg');
+      errorMsg.textContent = 'Please enter a valid and unique User ID.';
+      errorMsg.classList.remove('hidden');
+      return;
+    }
     
     const btn = document.getElementById('submitBtn');
     const errorMsg = document.getElementById('errorMsg');

@@ -23,6 +23,8 @@ public class RoadmapService
         string userId,
         string resumeText,
         string targetRole,
+        string industry,
+        int yearsOfExperience,
         CancellationToken ct = default)
     {
         // Build the RAG query for roadmap generation
@@ -39,7 +41,7 @@ public class RoadmapService
             """;
 
         var ragResponse = await _ragService.RetrieveAndGenerateAsync(
-            query, resumeText, targetRole, ct);
+            query, resumeText, targetRole, industry, yearsOfExperience, ct);
 
         // Parse the JSON response from Bedrock
         RoadmapPlan plan;

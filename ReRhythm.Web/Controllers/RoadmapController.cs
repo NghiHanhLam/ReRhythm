@@ -46,10 +46,12 @@ public class RoadmapController : Controller
         string userId,
         string resumeText,
         string targetRole,
+        string industry,
+        int yearsOfExperience,
         CancellationToken ct)
     {
         var plan = await _roadmapService.GenerateRoadmapAsync(
-            userId, resumeText, targetRole, ct);
+            userId, resumeText, targetRole, industry, yearsOfExperience, ct);
 
         return RedirectToAction("Index", new { userId });
     }
